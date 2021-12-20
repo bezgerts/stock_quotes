@@ -1,0 +1,8 @@
+spring:
+  flyway:
+    enabled: false
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/stock_database
+    username: bezgerts
+    password: password
