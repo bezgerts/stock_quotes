@@ -1,11 +1,19 @@
-package me.bezgerts.stockquotes.dto;
+package me.bezgerts.stockquotes.entity;
 
-import lombok.Data;
+import lombok.*;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.time.LocalDate;
 
 @Data
-public class CompanyDto {
+@Entity
+@Table(name = "company")
+@NoArgsConstructor
+@AllArgsConstructor
+public class Company {
+    @Id
     private String symbol;
     private String name;
     private LocalDate date;
