@@ -1,3 +1,8 @@
+stock-quotes:
+  iex:
+    base-url: https://sandbox.iexapis.com
+    symbols-path: /stable/ref-data/symbols
+    token: Tpk_ee567917a6b640bb8602834c9d30e571
 spring:
   flyway:
     enabled: true
