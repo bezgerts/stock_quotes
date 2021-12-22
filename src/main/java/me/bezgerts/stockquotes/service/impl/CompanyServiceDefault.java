@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.bezgerts.stockquotes.client.CompanyClient;
 import me.bezgerts.stockquotes.dto.CompanyDto;
 import me.bezgerts.stockquotes.entity.Company;
+import me.bezgerts.stockquotes.mapper.CompanyMapper;
 import me.bezgerts.stockquotes.repository.CompanyRepository;
 import me.bezgerts.stockquotes.service.CompanyService;
 import org.springframework.beans.BeanUtils;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -20,6 +22,7 @@ import java.util.List;
 public class CompanyServiceDefault implements CompanyService {
 
     private final CompanyRepository companyRepository;
+    private final CompanyMapper companyMapper;
     private final CompanyClient companyClient;
 
     @Override
@@ -28,9 +31,24 @@ public class CompanyServiceDefault implements CompanyService {
     }
 
     @Override
-    public void saveCompany(CompanyDto companyDto) {
-        Company company = new Company();
-        BeanUtils.copyProperties(companyDto, company);
-        companyRepository.save(company);
+    public void updateCompanyList(List<CompanyDto> companyDtoList) {
+        companyDtoList.stream()
+                .filter(CompanyDto::getIsEnabled)
+                .forEach(this::updateCompany);
+    }
+
+    private void updateCompany(CompanyDto companyDto) {
+        Optional<Company> companyOptional = companyRepository.findById(companyDto.getSymbol());
+        if (companyOptional.isPresent()) {
+            Company companyFromDb = companyOptional.get();
+            Company updatedCompany = companyMapper.companyFromCompanyDto(companyDto);
+            if (!companyFromDb.equals(updatedCompany)) {
+                BeanUtils.copyProperties(updatedCompany, companyFromDb);
+                companyRepository.save(companyFromDb);
+            }
+        } else {
+            Company company = companyMapper.companyFromCompanyDto(companyDto);
+            companyRepository.save(company);
+        }
     }
 }

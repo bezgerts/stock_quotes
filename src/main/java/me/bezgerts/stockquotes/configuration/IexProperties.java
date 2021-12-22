@@ -12,5 +12,6 @@ import org.springframework.context.annotation.Configuration;
 public class IexProperties {
     private String baseUrl;
     private String symbolsPath;
+    private String quoteInfoPath;
     private String token;
 }

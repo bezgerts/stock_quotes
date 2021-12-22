@@ -1,7 +1,11 @@
 stock-quotes:
+  scheduler:
+    company-update-period-ms: 50
+    log-result-period-ms: 5000
   iex:
     base-url: https://sandbox.iexapis.com
     symbols-path: /stable/ref-data/symbols
+    quote-info-path: /stable/stock/{stock code}/quote
     token: Tpk_ee567917a6b640bb8602834c9d30e571
 spring:
   flyway:

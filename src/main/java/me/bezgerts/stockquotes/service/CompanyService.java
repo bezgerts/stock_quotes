@@ -7,5 +7,5 @@ import java.util.List;
 public interface CompanyService {
 
     List<CompanyDto> getAllCompanies();
-    void saveCompany(CompanyDto companyDto);
+    void updateCompanyList(List<CompanyDto> companyDtoList);
 }

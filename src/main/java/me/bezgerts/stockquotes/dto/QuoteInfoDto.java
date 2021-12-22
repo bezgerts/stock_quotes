@@ -5,7 +5,7 @@ import lombok.Data;
 import java.math.BigDecimal;
 
 @Data
-public class QuoteInfo {
+public class QuoteInfoDto {
     private String symbol;
     private String companyName;
     private Long volume;
