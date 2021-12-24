@@ -5,7 +5,7 @@ create table if not exists quote_info
         references company,
     company_name        varchar(1024),
     volume              bigint,
-    previous_volume     bigint,
+    diff_price          numeric,
     latest_price        numeric
 );
 

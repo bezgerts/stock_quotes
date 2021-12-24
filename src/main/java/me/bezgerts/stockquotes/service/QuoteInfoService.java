@@ -1,5 +1,7 @@
 package me.bezgerts.stockquotes.service;
 
+import me.bezgerts.stockquotes.dto.CompanyDto;
+
 public interface QuoteInfoService {
-    void saveQuoteInfo(String symbol);
+    void updateQuoteInfo(CompanyDto companyDto);
 }

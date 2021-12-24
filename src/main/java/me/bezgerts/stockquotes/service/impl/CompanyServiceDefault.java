@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,10 +32,15 @@ public class CompanyServiceDefault implements CompanyService {
     }
 
     @Override
-    public void updateCompanyList(List<CompanyDto> companyDtoList) {
+    public List<CompanyDto> updateCompanyList(List<CompanyDto> companyDtoList) {
         companyDtoList.stream()
                 .filter(CompanyDto::getIsEnabled)
                 .forEach(this::updateCompany);
+        return companyRepository.findAll()
+                .stream()
+                .filter(Company::getIsEnabled)
+                .map(companyMapper::companyDtoFromCompany)
+                .collect(Collectors.toList());
     }
 
     private void updateCompany(CompanyDto companyDto) {

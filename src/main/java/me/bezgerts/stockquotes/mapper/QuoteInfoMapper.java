@@ -11,6 +11,11 @@ public class QuoteInfoMapper {
     public QuoteInfo quoteInfoFromQuoteInfoDto(QuoteInfoDto quoteInfoDto) {
         QuoteInfo result = new QuoteInfo();
         BeanUtils.copyProperties(quoteInfoDto, result);
+        if (quoteInfoDto.getVolume() != null) {
+            result.setVolume(quoteInfoDto.getVolume());
+        } else  {
+            result.setVolume(quoteInfoDto.getPreviousVolume());
+        }
         return result;
     }
 
