@@ -1,4 +1,5 @@
 stock-quotes:
+  thread-count: 10
   scheduler:
     company-update-period-ms: 50
     log-result-period-ms: 5000

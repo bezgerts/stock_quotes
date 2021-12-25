@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -29,20 +30,39 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
 
     @Override
     public void updateQuoteInfo(CompanyDto companyDto) {
-        Optional<QuoteInfo> quoteInfoFromDbOptional = repository.findById(companyDto.getSymbol());
-        QuoteInfoDto quoteInfoDto = client.getQuoteInfo(companyDto.getSymbol());
-        if (quoteInfoFromDbOptional.isPresent()) {
-            QuoteInfo quoteInfoFromDb = quoteInfoFromDbOptional.get();
-            QuoteInfo quoteInfoFromRequest = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
-            BigDecimal diff = quoteInfoFromRequest.getLatestPrice().subtract(quoteInfoFromDb.getLatestPrice());
-            BeanUtils.copyProperties(quoteInfoFromRequest, quoteInfoFromDb);
-            quoteInfoFromDb.setDiffPrice(diff);
-            repository.save(quoteInfoFromDb);
-            log.info("updated quoteInfo: {}", quoteInfoFromDb);
-        } else {
-            QuoteInfo quoteInfoEntity = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
-            repository.save(quoteInfoEntity);
-            log.info("updated quoteInfo: {}", quoteInfoEntity);
+        try {
+            QuoteInfoDto quoteInfoDto = client.getQuoteInfo(companyDto.getSymbol());
+            Optional<QuoteInfo> quoteInfoFromDbOptional = repository.findById(companyDto.getSymbol());
+            if (quoteInfoFromDbOptional.isPresent()) {
+                QuoteInfo quoteInfoFromDb = quoteInfoFromDbOptional.get();
+                QuoteInfo quoteInfoFromRequest = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
+                BigDecimal diff = getDiffBetweenPrice(quoteInfoDto, quoteInfoFromDb, quoteInfoFromRequest);
+                BeanUtils.copyProperties(quoteInfoFromRequest, quoteInfoFromDb);
+                quoteInfoFromDb.setDiffPrice(diff);
+                repository.save(quoteInfoFromDb);
+                log.info("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoFromDb);
+            } else {
+                QuoteInfo quoteInfoEntity = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
+                repository.save(quoteInfoEntity);
+                log.info("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoEntity);
+            }
+        } catch (Exception e) {
+            log.error("e.getMessage: {} ; companyDto {}", e.getMessage(), companyDto, e);
         }
+    }
+
+    @Override
+    public void updateQuoteInfo(List<CompanyDto> companyDtoList) {
+        companyDtoList.forEach(this::updateQuoteInfo);
+    }
+
+    private BigDecimal getDiffBetweenPrice(QuoteInfoDto quoteInfoDto, QuoteInfo quoteInfoFromDb, QuoteInfo quoteInfoFromRequest) {
+        BigDecimal result;
+        if (quoteInfoFromRequest.getLatestPrice() != null) {
+             result = quoteInfoFromRequest.getLatestPrice().subtract(quoteInfoFromDb.getLatestPrice());
+        } else {
+            result = quoteInfoDto.getLatestPrice();
+        }
+        return result;
     }
 }
