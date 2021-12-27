@@ -25,6 +25,11 @@ public class CompanyServiceDefault implements CompanyService {
     private final CompanyClient companyClient;
 
     @Override
+    public CompanyDto findCompanyBySymbol(String symbol) {
+        return companyMapper.companyDtoFromCompany(companyRepository.findById(symbol).orElseThrow());
+    }
+
+    @Override
     public List<CompanyDto> getAllCompanies() {
         return companyClient.getAllCompanies();
     }

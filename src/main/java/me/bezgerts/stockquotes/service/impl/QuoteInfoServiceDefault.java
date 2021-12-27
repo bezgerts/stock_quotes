@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -38,11 +39,11 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
                 BeanUtils.copyProperties(quoteInfoFromRequest, quoteInfoFromDb);
                 quoteInfoFromDb.setDiffPrice(diff);
                 repository.save(quoteInfoFromDb);
-                log.info("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoFromDb);
+                log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoFromDb);
             } else {
                 QuoteInfo quoteInfoEntity = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
                 repository.save(quoteInfoEntity);
-                log.info("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoEntity);
+                log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoEntity);
             }
         } catch (Exception e) {
             log.error("e.getMessage: {} ; companyDto {}", e.getMessage(), companyDto, e);
@@ -52,6 +53,13 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
     @Override
     public void updateQuoteInfo(List<CompanyDto> companyDtoList) {
         companyDtoList.forEach(this::updateQuoteInfo);
+    }
+
+    @Override
+    public List<QuoteInfoDto> getAllQuotes() {
+        return repository.findAll().stream()
+                .map(quoteInfoMapper::quoteInfoDtoFromQuoteInfo)
+                .collect(Collectors.toList());
     }
 
     private BigDecimal getDiffBetweenPrice(QuoteInfoDto quoteInfoDto, QuoteInfo quoteInfoFromDb, QuoteInfo quoteInfoFromRequest) {

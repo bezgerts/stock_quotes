@@ -10,5 +10,6 @@ public class QuoteInfoDto {
     private String companyName;
     private Long volume;
     private Long previousVolume;
+    private BigDecimal diffPrice;
     private BigDecimal latestPrice;
 }

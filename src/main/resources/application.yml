@@ -1,5 +1,7 @@
 stock-quotes:
-  thread-count: 10
+  thread-count: 50
+  count-top-volume-companies: 5
+  count-top-volatile-companies: 5
   scheduler:
     company-update-period-ms: 50
     log-result-period-ms: 5000
@@ -16,3 +18,8 @@ spring:
     url: jdbc:postgresql://localhost:5432/stock_database
     username: bezgerts
     password: password
+
+logging:
+  level:
+    me:
+      bezgerts: INFO
