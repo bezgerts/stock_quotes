@@ -11,14 +11,12 @@ import me.bezgerts.stockquotes.service.CompanyService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class CompanyServiceDefault implements CompanyService {
 

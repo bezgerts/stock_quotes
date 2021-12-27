@@ -12,7 +12,6 @@ import me.bezgerts.stockquotes.service.QuoteInfoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -20,7 +19,6 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-@Transactional
 @RequiredArgsConstructor
 public class QuoteInfoServiceDefault implements QuoteInfoService {
 
