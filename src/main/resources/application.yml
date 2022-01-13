@@ -1,3 +1,6 @@
+rest:
+  max-total-connection-count: 50
+  connection-request-timeout: 50000
 stock-quotes:
   thread-count: 50
   count-top-volume-companies: 5

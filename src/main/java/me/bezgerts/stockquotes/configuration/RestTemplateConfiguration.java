@@ -1,5 +1,6 @@
 package me.bezgerts.stockquotes.configuration;
 
+import lombok.RequiredArgsConstructor;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -11,21 +12,24 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
+@RequiredArgsConstructor
 public class RestTemplateConfiguration {
+
+    private final RestProperties restProperties;
 
     @Bean
     public PoolingHttpClientConnectionManager poolingHttpClientConnectionManager() {
         PoolingHttpClientConnectionManager poolingConnectionManager = new PoolingHttpClientConnectionManager();
-        poolingConnectionManager.setMaxTotal(50);
+        poolingConnectionManager.setMaxTotal(restProperties.getMaxTotalConnectionCount());
         return poolingConnectionManager;
     }
 
     @Bean
     public HttpClient httpClient() {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectionRequestTimeout(50000)
-                .setConnectTimeout(50000)
-                .setSocketTimeout(50000)
+                .setConnectionRequestTimeout(restProperties.getConnectionRequestTimeout())
+                .setConnectTimeout(restProperties.getConnectionRequestTimeout())
+                .setSocketTimeout(restProperties.getConnectionRequestTimeout())
                 .setCookieSpec(CookieSpecs.STANDARD)
                 .build();
 
