@@ -8,10 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "rest")
-public class RestProperties {
+@ConfigurationProperties(prefix = "http-client")
+public class HttpClientProperties {
     private boolean enableDelayBeforeQuoteInfoRequest;
     private int delayTimeBeforeQuoteInfoRequestMs;
-    private int maxTotalConnectionCount;
-    private int connectionRequestTimeout;
 }

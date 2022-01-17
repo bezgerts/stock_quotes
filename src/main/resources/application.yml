@@ -1,3 +1,6 @@
+http-client:
+  enable-delay-before-quote-info-request: true
+  delay-time-before-quote-info-request-ms: 200
 rest:
   max-total-connection-count: 50
   connection-request-timeout: 50000
@@ -21,6 +24,11 @@ spring:
     url: jdbc:postgresql://localhost:5432/stock_database
     username: bezgerts
     password: password
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
 
 logging:
   level:

@@ -2,11 +2,15 @@ package me.bezgerts.stockquotes.service;
 
 import me.bezgerts.stockquotes.dto.CompanyDto;
 import me.bezgerts.stockquotes.dto.QuoteInfoDto;
+import me.bezgerts.stockquotes.entity.QuoteInfo;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public interface QuoteInfoService {
-    void updateQuoteInfo(CompanyDto companyDto);
-    void updateQuoteInfo(List<CompanyDto> companyDtoList);
+    CompletableFuture<QuoteInfo> updateQuoteInfo(CompanyDto companyDto);
+
+    void batchUpdateQuoteInfoList(List<QuoteInfo> quoteInfoList);
+
     List<QuoteInfoDto> getAllQuotes();
 }

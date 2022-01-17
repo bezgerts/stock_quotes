@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,7 +41,7 @@ public class LogResultScheduler {
     private void logTopVolumeCompanies(List<QuoteInfoDto> quoteInfoDtoList, int count) {
         log.info("=== top volumed companies ===");
         List<QuoteInfoDto> sortedQuoteInfoDtoList = quoteInfoDtoList.stream()
-                .filter(quoteInfoDto -> quoteInfoDto.getVolume() != null)
+                .filter(quoteInfoDto -> Objects.nonNull(quoteInfoDto.getVolume()))
                 .sorted(LogResultScheduler::sortByVolume)
                 .collect(Collectors.toList());
         printResultDto(getResultDtoListByQuoteInfoDto(sortedQuoteInfoDtoList, count));
@@ -77,7 +78,7 @@ public class LogResultScheduler {
     }
 
     private List<ResultDto> getResultDtoListByQuoteInfoDto(List<QuoteInfoDto> quoteInfoDtoList, int count) {
-        return quoteInfoDtoList.stream()
+        return quoteInfoDtoList.parallelStream()
                 .limit(count)
                 .map(this::quoteInfoDtoToResultDto)
                 .collect(Collectors.toList());

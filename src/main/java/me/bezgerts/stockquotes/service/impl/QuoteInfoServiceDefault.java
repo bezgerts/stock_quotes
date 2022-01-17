@@ -12,9 +12,12 @@ import me.bezgerts.stockquotes.service.QuoteInfoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 
@@ -26,33 +29,23 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
     private final QuoteClient client;
     private final QuoteInfoRepository repository;
     private final QuoteInfoMapper quoteInfoMapper;
+    private final ExecutorService executorService;
 
     @Override
-    public void updateQuoteInfo(CompanyDto companyDto) {
-        try {
-            QuoteInfoDto quoteInfoDto = client.getQuoteInfo(companyDto.getSymbol());
-            Optional<QuoteInfo> quoteInfoFromDbOptional = repository.findById(companyDto.getSymbol());
-            if (quoteInfoFromDbOptional.isPresent()) {
-                QuoteInfo quoteInfoFromDb = quoteInfoFromDbOptional.get();
-                QuoteInfo quoteInfoFromRequest = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
-                BigDecimal diff = getDiffBetweenPrice(quoteInfoDto, quoteInfoFromDb, quoteInfoFromRequest);
-                BeanUtils.copyProperties(quoteInfoFromRequest, quoteInfoFromDb);
-                quoteInfoFromDb.setDiffPrice(diff);
-                repository.save(quoteInfoFromDb);
-                log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoFromDb);
-            } else {
-                QuoteInfo quoteInfoEntity = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
-                repository.save(quoteInfoEntity);
-                log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoEntity);
-            }
-        } catch (Exception e) {
-            log.error("e.getMessage: {} ; companyDto {}", e.getMessage(), companyDto, e);
-        }
+    public CompletableFuture<QuoteInfo> updateQuoteInfo(CompanyDto companyDto) {
+        CompletableFuture<QuoteInfoDto> quoteInfoDtoCF = client.getQuoteInfoAsync(companyDto.getSymbol());
+        CompletableFuture<Optional<QuoteInfo>> quoteInfoFromDbOptionalCF = findQuoteInfoFromDbCF(companyDto.getSymbol());
+        return quoteInfoDtoCF.thenCombine(quoteInfoFromDbOptionalCF, this::updateQuoteInfo)
+                .exceptionally(e -> {
+                    log.error("e.getMessage: {} ; companyDto {}", e.getMessage(), companyDto, e);
+                    return null;
+                });
     }
 
     @Override
-    public void updateQuoteInfo(List<CompanyDto> companyDtoList) {
-        companyDtoList.forEach(this::updateQuoteInfo);
+    @Transactional
+    public void batchUpdateQuoteInfoList(List<QuoteInfo> quoteInfoList) {
+        repository.saveAll(quoteInfoList);
     }
 
     @Override
@@ -62,10 +55,34 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
                 .collect(Collectors.toList());
     }
 
+    // TODO: 17.01.2022 посоветоваться, как обновлять (батчем или по одной записи)?
+    private QuoteInfo updateQuoteInfo(QuoteInfoDto quoteInfoDto, Optional<QuoteInfo> quoteInfoOptional) {
+        if (quoteInfoDto == null) {
+            return null;
+        }
+        if (quoteInfoOptional.isPresent()) {
+            QuoteInfo quoteInfoFromDb = quoteInfoOptional.get();
+            QuoteInfo quoteInfoFromRequest = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
+            BigDecimal diff = getDiffBetweenPrice(quoteInfoDto, quoteInfoFromDb, quoteInfoFromRequest);
+            BeanUtils.copyProperties(quoteInfoFromRequest, quoteInfoFromDb);
+            quoteInfoFromDb.setDiffPrice(diff);
+            log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoFromDb);
+            return quoteInfoFromDb;
+        } else {
+            QuoteInfo quoteInfoEntity = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
+            log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoEntity);
+            return quoteInfoEntity;
+        }
+    }
+
+    private CompletableFuture<Optional<QuoteInfo>> findQuoteInfoFromDbCF(String symbol) {
+        return CompletableFuture.supplyAsync(() -> repository.findById(symbol), executorService);
+    }
+
     private BigDecimal getDiffBetweenPrice(QuoteInfoDto quoteInfoDto, QuoteInfo quoteInfoFromDb, QuoteInfo quoteInfoFromRequest) {
         BigDecimal result;
         if (quoteInfoFromRequest.getLatestPrice() != null) {
-             result = quoteInfoFromRequest.getLatestPrice().subtract(quoteInfoFromDb.getLatestPrice());
+            result = quoteInfoFromRequest.getLatestPrice().subtract(quoteInfoFromDb.getLatestPrice());
         } else {
             result = quoteInfoDto.getLatestPrice();
         }

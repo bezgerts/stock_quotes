@@ -36,28 +36,28 @@ public class CompanyServiceDefault implements CompanyService {
 
     @Override
     public List<CompanyDto> updateCompanyList(List<CompanyDto> companyDtoList) {
-        companyDtoList.stream()
+        List<Company> companyList = companyDtoList.stream()
                 .filter(CompanyDto::getIsEnabled)
-                .forEach(this::updateCompany);
-        return companyRepository.findAll()
-                .stream()
-                .filter(Company::getIsEnabled)
+                .map(this::getEntityForSave)
+                .collect(Collectors.toList());
+        companyRepository.saveAll(companyList);
+        return companyList.stream()
                 .map(companyMapper::companyDtoFromCompany)
                 .collect(Collectors.toList());
     }
 
-    private void updateCompany(CompanyDto companyDto) {
+    private Company getEntityForSave(CompanyDto companyDto) {
+        // TODO: 17.01.2022 подумать над тем, чтобы вытаскивать компанию из кеша
         Optional<Company> companyOptional = companyRepository.findById(companyDto.getSymbol());
         if (companyOptional.isPresent()) {
             Company companyFromDb = companyOptional.get();
             Company updatedCompany = companyMapper.companyFromCompanyDto(companyDto);
             if (!companyFromDb.equals(updatedCompany)) {
                 BeanUtils.copyProperties(updatedCompany, companyFromDb);
-                companyRepository.save(companyFromDb);
             }
+            return companyFromDb;
         } else {
-            Company company = companyMapper.companyFromCompanyDto(companyDto);
-            companyRepository.save(company);
+            return companyMapper.companyFromCompanyDto(companyDto);
         }
     }
 }
