@@ -6,6 +6,8 @@ import java.util.List;
 
 public interface CompanyService {
     CompanyDto findCompanyBySymbol(String symbol);
-    List<CompanyDto> getAllCompanies();
+
+    List<CompanyDto> getAllCompaniesFromIEX();
+
     List<CompanyDto> updateCompanyList(List<CompanyDto> companyDtoList);
 }

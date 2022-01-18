@@ -1,6 +1,5 @@
 package me.bezgerts.stockquotes.service.impl;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.bezgerts.stockquotes.client.CompanyClient;
 import me.bezgerts.stockquotes.dto.CompanyDto;
@@ -12,25 +11,40 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CompanyServiceDefault implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final CompanyMapper companyMapper;
     private final CompanyClient companyClient;
+    private final Map<String, CompanyDto> companyDtoCache;
 
-    @Override
-    public CompanyDto findCompanyBySymbol(String symbol) {
-        return companyMapper.companyDtoFromCompany(companyRepository.findById(symbol).orElseThrow());
+    public CompanyServiceDefault(CompanyRepository companyRepository, CompanyMapper companyMapper, CompanyClient companyClient) {
+        this.companyRepository = companyRepository;
+        this.companyMapper = companyMapper;
+        this.companyClient = companyClient;
+        this.companyDtoCache = new ConcurrentHashMap<>();
     }
 
     @Override
-    public List<CompanyDto> getAllCompanies() {
+    public CompanyDto findCompanyBySymbol(String symbol) {
+        if (companyDtoCache.containsKey(symbol)) {
+            return companyDtoCache.get(symbol);
+        } else {
+            CompanyDto companyDto = companyMapper.companyDtoFromCompany(companyRepository.findById(symbol).orElseThrow());
+            companyDtoCache.put(symbol, companyDto);
+            return companyDto;
+        }
+    }
+
+    @Override
+    public List<CompanyDto> getAllCompaniesFromIEX() {
         return companyClient.getAllCompanies();
     }
 
@@ -47,7 +61,6 @@ public class CompanyServiceDefault implements CompanyService {
     }
 
     private Company getEntityForSave(CompanyDto companyDto) {
-        // TODO: 17.01.2022 подумать над тем, чтобы вытаскивать компанию из кеша
         Optional<Company> companyOptional = companyRepository.findById(companyDto.getSymbol());
         if (companyOptional.isPresent()) {
             Company companyFromDb = companyOptional.get();
