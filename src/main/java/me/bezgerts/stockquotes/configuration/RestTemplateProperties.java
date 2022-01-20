@@ -8,8 +8,8 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "rest")
-public class RestProperties {
+@ConfigurationProperties(prefix = "http.rest-template")
+public class RestTemplateProperties {
     private boolean enableDelayBeforeQuoteInfoRequest;
     private int delayTimeBeforeQuoteInfoRequestMs;
     private int maxTotalConnectionCount;

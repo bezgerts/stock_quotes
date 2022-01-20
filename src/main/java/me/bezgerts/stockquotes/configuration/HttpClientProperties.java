@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Getter
 @Setter
 @Configuration
-@ConfigurationProperties(prefix = "http-client")
+@ConfigurationProperties(prefix = "http.http-client")
 public class HttpClientProperties {
     private boolean enableDelayBeforeQuoteInfoRequest;
     private int delayTimeBeforeQuoteInfoRequestMs;

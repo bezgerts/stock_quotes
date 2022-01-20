@@ -44,7 +44,7 @@ public class CompanyServiceDefault implements CompanyService {
     }
 
     @Override
-    public List<CompanyDto> getAllCompaniesFromIEX() {
+    public List<CompanyDto> getAllCompanies() {
         return companyClient.getAllCompanies();
     }
 
@@ -55,9 +55,14 @@ public class CompanyServiceDefault implements CompanyService {
                 .map(this::getEntityForSave)
                 .collect(Collectors.toList());
         companyRepository.saveAll(companyList);
+        clearCache();
         return companyList.stream()
                 .map(companyMapper::companyDtoFromCompany)
                 .collect(Collectors.toList());
+    }
+
+    private void clearCache() {
+        companyDtoCache.clear();
     }
 
     private Company getEntityForSave(CompanyDto companyDto) {

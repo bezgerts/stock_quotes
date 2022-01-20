@@ -12,7 +12,6 @@ import me.bezgerts.stockquotes.service.QuoteInfoService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -33,19 +32,13 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
 
     @Override
     public CompletableFuture<QuoteInfo> updateQuoteInfo(CompanyDto companyDto) {
-        CompletableFuture<QuoteInfoDto> quoteInfoDtoCF = client.getQuoteInfoAsync(companyDto.getSymbol());
+        CompletableFuture<QuoteInfoDto> quoteInfoDtoCF = client.getQuoteInfo(companyDto.getSymbol());
         CompletableFuture<Optional<QuoteInfo>> quoteInfoFromDbOptionalCF = findQuoteInfoFromDbCF(companyDto.getSymbol());
-        return quoteInfoDtoCF.thenCombine(quoteInfoFromDbOptionalCF, this::updateQuoteInfo)
+        return quoteInfoDtoCF.thenCombineAsync(quoteInfoFromDbOptionalCF, this::updateQuoteInfo, executorService)
                 .exceptionally(e -> {
                     log.error("e.getMessage: {} ; companyDto {}", e.getMessage(), companyDto, e);
                     return null;
                 });
-    }
-
-    @Override
-    @Transactional
-    public void batchUpdateQuoteInfoList(List<QuoteInfo> quoteInfoList) {
-        repository.saveAll(quoteInfoList);
     }
 
     @Override
@@ -55,7 +48,6 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
                 .collect(Collectors.toList());
     }
 
-    // TODO: 17.01.2022 посоветоваться, как обновлять (батчем или по одной записи)?
     private QuoteInfo updateQuoteInfo(QuoteInfoDto quoteInfoDto, Optional<QuoteInfo> quoteInfoOptional) {
         if (quoteInfoDto == null) {
             return null;
@@ -66,10 +58,12 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
             BigDecimal diff = getDiffBetweenPrice(quoteInfoDto, quoteInfoFromDb, quoteInfoFromRequest);
             BeanUtils.copyProperties(quoteInfoFromRequest, quoteInfoFromDb);
             quoteInfoFromDb.setDiffPrice(diff);
+            repository.save(quoteInfoFromDb);
             log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoFromDb);
             return quoteInfoFromDb;
         } else {
             QuoteInfo quoteInfoEntity = quoteInfoMapper.quoteInfoFromQuoteInfoDto(quoteInfoDto);
+            repository.save(quoteInfoEntity);
             log.debug("thread: {}, updated quoteInfo: {}", Thread.currentThread().getName(), quoteInfoEntity);
             return quoteInfoEntity;
         }

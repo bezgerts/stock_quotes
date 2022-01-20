@@ -9,8 +9,5 @@ import java.util.concurrent.CompletableFuture;
 
 public interface QuoteInfoService {
     CompletableFuture<QuoteInfo> updateQuoteInfo(CompanyDto companyDto);
-
-    void batchUpdateQuoteInfoList(List<QuoteInfo> quoteInfoList);
-
     List<QuoteInfoDto> getAllQuotes();
 }

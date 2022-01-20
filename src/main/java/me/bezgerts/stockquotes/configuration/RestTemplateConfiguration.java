@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class RestTemplateConfiguration {
 
-    private final RestProperties restProperties;
+    private final RestTemplateProperties restProperties;
 
     @Bean
     public PoolingHttpClientConnectionManager poolingHttpClientConnectionManager() {

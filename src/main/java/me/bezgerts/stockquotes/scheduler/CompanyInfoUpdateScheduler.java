@@ -34,8 +34,6 @@ public class CompanyInfoUpdateScheduler {
                 .map(quoteInfoService::updateQuoteInfo)
                 .map(CompletableFuture::join)
                 .collect(Collectors.toList());
-
-        // сохраняем список обновленных QuoteInfo при помощи batchUpdate
-        quoteInfoService.batchUpdateQuoteInfoList(updatedQuoteInfoCFList);
+        log.info("count of updated quoteInfo: {}", updatedQuoteInfoCFList.size());
     }
 }

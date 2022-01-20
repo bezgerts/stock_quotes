@@ -1,9 +1,11 @@
-http-client:
-  enable-delay-before-quote-info-request: true
-  delay-time-before-quote-info-request-ms: 200
-rest:
-  max-total-connection-count: 50
-  connection-request-timeout: 50000
+http:
+  client-type: REST_TEMPLATE
+  http-client:
+    enable-delay-before-quote-info-request: true
+    delay-time-before-quote-info-request-ms: 50
+  rest-template:
+    max-total-connection-count: 50
+    connection-request-timeout: 50000
 stock-quotes:
   thread-count: 50
   count-top-volume-companies: 5
