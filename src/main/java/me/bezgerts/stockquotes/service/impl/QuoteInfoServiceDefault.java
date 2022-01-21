@@ -76,7 +76,11 @@ public class QuoteInfoServiceDefault implements QuoteInfoService {
     private BigDecimal getDiffBetweenPrice(QuoteInfoDto quoteInfoDto, QuoteInfo quoteInfoFromDb, QuoteInfo quoteInfoFromRequest) {
         BigDecimal result;
         if (quoteInfoFromRequest.getLatestPrice() != null) {
-            result = quoteInfoFromRequest.getLatestPrice().subtract(quoteInfoFromDb.getLatestPrice());
+            if (quoteInfoFromDb.getDiffPrice() != null) {
+                result = quoteInfoFromRequest.getLatestPrice().subtract(quoteInfoFromDb.getLatestPrice());
+            } else {
+                return quoteInfoFromRequest.getLatestPrice();
+            }
         } else {
             result = quoteInfoDto.getLatestPrice();
         }

@@ -1,5 +1,6 @@
 package me.bezgerts.stockquotes.configuration;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -13,13 +14,16 @@ import java.util.concurrent.ScheduledExecutorService;
 @EnableScheduling
 public class SchedulerConfiguration implements SchedulingConfigurer {
 
+    @Value("${stock-quotes.scheduler-thread-count}")
+    private int schedulerThreadCount;
+
     @Override
     public void configureTasks(ScheduledTaskRegistrar taskRegistrar) {
         taskRegistrar.setScheduler(taskExecutor());
     }
 
-    @Bean(destroyMethod="shutdown")
+    @Bean(destroyMethod = "shutdown")
     public ScheduledExecutorService taskExecutor() {
-        return Executors.newScheduledThreadPool(100);
+        return Executors.newScheduledThreadPool(schedulerThreadCount);
     }
 }

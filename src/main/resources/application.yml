@@ -7,7 +7,8 @@ http:
     max-total-connection-count: 50
     connection-request-timeout: 50000
 stock-quotes:
-  thread-count: 50
+  thread-count: 5
+  scheduler-thread-count: 1
   count-top-volume-companies: 5
   count-top-volatile-companies: 5
   scheduler:
